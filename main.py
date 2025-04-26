@@ -5,7 +5,7 @@ from config import SECRET_KEY
 st.set_page_config(
     page_title="Ballers",
     page_icon="assets/logo.png",
-    layout="wide"
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 st.image("assets/logo.png", width=200)
@@ -47,6 +47,3 @@ if selection == 'Ballers':
 elif selection == 'Administración':
     import pages.admin as admin_page
     admin_page.show()
-elif selection == 'Mi Perfil':
-    import pages.player as player_page
-    player_page.show()

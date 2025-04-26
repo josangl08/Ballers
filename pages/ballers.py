@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import DATABASE_URL
 from models.player_model import Player
-from models.session_model import Session, SessionStatus
 from models.test_model import TestResult
+from controllers.calendar_controller import list_sessions_for_player
 import matplotlib.pyplot as plt
 
 # Conexión a la base de datos
@@ -15,25 +15,28 @@ SessionLocal = sessionmaker(bind=engine)
 
 def show():
     st.title("Ballers - Perfiles de Jugadores")
+
+    # Obtener lista de jugadores según rol
     with SessionLocal() as db:
-        # Para jugadores, sólo su propio perfil; sino, lista completa
         if st.session_state['user_type'] == 'player':
             players = db.query(Player).filter_by(user_id=st.session_state['user_id']).all()
         else:
             players = db.query(Player).all()
         names = [p.user.name for p in players]
-    # Selección de jugador (los jugadores verán por defecto su nombre)
+
     selected = st.selectbox("Selecciona un jugador", names)
     if not selected:
         return
 
-    # Obtener detalle de player
+    # Cargar detalle del jugador
     with SessionLocal() as db:
         if st.session_state['user_type'] == 'player':
             p = db.query(Player).filter_by(user_id=st.session_state['user_id']).first()
         else:
-            p = db.query(Player).join(Player.user).filter(Player.user.has(name=selected)).first()
-
+            p = (db.query(Player)
+                   .join(Player.user)
+                   .filter(Player.user.has(name=selected))
+                   .first())
     if not p:
         st.error("Jugador no encontrado")
         return
@@ -45,7 +48,6 @@ def show():
         "Email": p.user.email,
         "Teléfono": p.user.phone,
         "Fecha Nacimiento": p.user.date_of_birth,
-        # Asumiendo que peso y altura se guardan en atributos adicionales
         **({"Peso": getattr(p, "weight", None), "Altura": getattr(p, "height", None)})
     })
 
@@ -57,10 +59,9 @@ def show():
     st.subheader("Resultados de Tests y Progresión")
     tests = db.query(TestResult).filter_by(player_id=p.player_id).all()
     if tests:
-        # Tabla de resultados
         for t in tests:
-            st.write(f"{t.date.date()} - {t.test_name}: {t.value}")
-        # Gráfica de ejemplo: evolución de un test (p.ej., sprint)
+            st.write(f"{t.date.date()} - {t.test_name}: {getattr(t, t.test_name, t.value)}")
+        # Ejemplo: progreso de sprint
         dates = [t.date for t in tests if t.test_name == 'sprint']
         values = [t.sprint for t in tests if t.test_name == 'sprint']
         if dates and values:
@@ -73,8 +74,13 @@ def show():
     else:
         st.write("No hay resultados de tests para este jugador.")
 
-    # Calendario de sesiones
-    st.subheader("Sesiones de Entrenamiento")
-    sessions = db.query(Session).filter_by(player_id=p.player_id).all()
-    for s in sessions:
-        st.write(f"{s.start_time} - {s.status.value}")
+    # Calendario de sesiones desde Google Calendar
+    st.subheader("Sesiones de Entrenamiento (Calendario)")
+    events = list_sessions_for_player(p.user.email)
+    if events:
+        for e in events:
+            start = e['start'].get('dateTime', e['start'].get('date'))
+            status = e.get('status', 'confirmed')
+            st.write(f"{start} - {status}")
+    else:
+        st.write("No hay sesiones en el calendario.")

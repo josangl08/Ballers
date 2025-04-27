@@ -15,12 +15,11 @@ from controllers.sheets_controller import get_financials
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
-
 def show():
     st.title("Administración")
     user_type = st.session_state['user_type']
 
-    # Formulario de creación de sesiones (solo para administradores)
+    # 1) Formulario de creación de sesiones (solo admin)
     if user_type == 'admin':
         st.subheader("Crear nueva sesión")
         with SessionLocal() as db:
@@ -41,6 +40,7 @@ def show():
             )
             st.success(f"Sesión creada (ID DB: {new_sess.id}, ID Calendar: {event_id})")
 
+    # 2) Sección para coaches: ver y gestionar sus propias sesiones
     with SessionLocal() as db:
         if user_type == 'coach':
             st.subheader("Mi Perfil - Coach")
@@ -70,7 +70,28 @@ def show():
                             st.experimental_rerun()
             else:
                 st.error("Perfil de coach no encontrado.")
+        # 3) Sección para admins: gestión total de sesiones e informe financiero
         elif user_type == 'admin':
+            st.subheader("Gestión de Sesiones (Local DB)")
+            with SessionLocal() as db:
+                all_sessions = db.query(Session).all()
+            for s in all_sessions:
+                st.write(f"ID {s.id}: Coach {s.coach_id} - Jugador {s.player_id} | "
+                         f"{s.start_time} - {s.end_time} [{s.status.value}]")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    if st.button(f"Completar {s.id}"):
+                        update_session(s.id, status=SessionStatus.COMPLETED)
+                        st.experimental_rerun()
+                with col2:
+                    if st.button(f"Cancelar {s.id}"):
+                        update_session(s.id, status=SessionStatus.CANCELED)
+                        st.experimental_rerun()
+                with col3:
+                    if st.button(f"Eliminar {s.id}"):
+                        delete_session(s.id)
+                        st.experimental_rerun()
+
             st.subheader("Informe Financiero")
             df = get_financials()
             st.dataframe(df)

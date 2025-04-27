@@ -2,21 +2,20 @@
 import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 from config import DATABASE_URL
 from models.player_model import Player
 from models.test_model import TestResult
 from controllers.calendar_controller import list_sessions_for_player
 import matplotlib.pyplot as plt
 
-# Conexión a la base de datos
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
-
 
 def show():
     st.title("Ballers - Perfiles de Jugadores")
 
-    # Obtener lista de jugadores según rol
+    # Filtrar lista de jugadores según rol
     with SessionLocal() as db:
         if st.session_state['user_type'] == 'player':
             players = db.query(Player).filter_by(user_id=st.session_state['user_id']).all()
@@ -28,15 +27,14 @@ def show():
     if not selected:
         return
 
-    # Cargar detalle del jugador
     with SessionLocal() as db:
         if st.session_state['user_type'] == 'player':
             p = db.query(Player).filter_by(user_id=st.session_state['user_id']).first()
         else:
             p = (db.query(Player)
-                   .join(Player.user)
-                   .filter(Player.user.has(name=selected))
-                   .first())
+                 .join(Player.user)
+                 .filter(Player.user.has(name=selected))
+                 .first())
     if not p:
         st.error("Jugador no encontrado")
         return
@@ -48,20 +46,19 @@ def show():
         "Email": p.user.email,
         "Teléfono": p.user.phone,
         "Fecha Nacimiento": p.user.date_of_birth,
-        **({"Peso": getattr(p, "weight", None), "Altura": getattr(p, "height", None)})
+        **({"Peso": getattr(p, "weight", None), "Altura": getattr(p, "height", None)})  
     })
 
     # Datos de servicio
     st.subheader("Datos de Servicio")
     st.write({"Servicio": p.service, "Sesiones inscritas": p.enrolment, "Notas": p.notes})
 
-    # Resultados de tests y gráfica de progresión
+    # Tests y progresión
     st.subheader("Resultados de Tests y Progresión")
     tests = db.query(TestResult).filter_by(player_id=p.player_id).all()
     if tests:
         for t in tests:
             st.write(f"{t.date.date()} - {t.test_name}: {getattr(t, t.test_name, t.value)}")
-        # Ejemplo: progreso de sprint
         dates = [t.date for t in tests if t.test_name == 'sprint']
         values = [t.sprint for t in tests if t.test_name == 'sprint']
         if dates and values:
@@ -74,7 +71,7 @@ def show():
     else:
         st.write("No hay resultados de tests para este jugador.")
 
-    # Calendario de sesiones desde Google Calendar
+    # Calendario de sesiones
     st.subheader("Sesiones de Entrenamiento (Calendario)")
     events = list_sessions_for_player(p.user.email)
     if events:

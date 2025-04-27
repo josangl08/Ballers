@@ -1,16 +1,14 @@
-# pages/ballers.py
 import streamlit as st
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from controllers.db_controller import get_session_local
 from datetime import datetime
 from config import DATABASE_URL
 from models.player_model import Player
 from models.test_model import TestResult
-from controllers.calendar_controller import list_sessions_for_player
+from common.services.session_service import SessionService  # Importamos la nueva clase del servicio
 import matplotlib.pyplot as plt
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+# Conexión a BD
+SessionLocal = get_session_local()
 
 def show():
     st.title("Ballers - Perfiles de Jugadores")
@@ -73,7 +71,7 @@ def show():
 
     # Calendario de sesiones
     st.subheader("Sesiones de Entrenamiento (Calendario)")
-    events = list_sessions_for_player(p.user.email)
+    events = SessionService.list_for_player(p.user.email)  # Usamos el servicio para obtener las sesiones
     if events:
         for e in events:
             start = e['start'].get('dateTime', e['start'].get('date'))

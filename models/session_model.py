@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -15,9 +15,13 @@ class Session(Base):
     id          = Column(Integer, primary_key=True)
     coach_id    = Column(Integer, ForeignKey("coaches.coach_id"), nullable=False)
     player_id   = Column(Integer, ForeignKey("players.player_id"), nullable=False)
-    start_time  = Column(DateTime, default=datetime.utcnow)
+    start_time  = Column(DateTime, default=datetime.now(datetime.timezone.utc))
     end_time    = Column(DateTime)
     status      = Column(Enum(SessionStatus), default=SessionStatus.SCHEDULED)
+    notes      = Column(String, nullable=True)
+    created_at  = Column(DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+
+    calendar_event_id = Column(String, nullable=True)
 
     # Relaciones
     coach       = relationship("Coach", back_populates="sessions")

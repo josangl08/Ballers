@@ -1,14 +1,12 @@
 # pages/login.py
 import streamlit as st
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from controllers.db_controller import get_session_local
 from config import DATABASE_URL
 from models.user_model import User
 import bcrypt
 
-# Configurar conexión a BD
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+# Conexión a BD
+SessionLocal = get_session_local()
 
 def show():
     st.title("Login")

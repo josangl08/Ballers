@@ -1,19 +1,15 @@
-# pages/admin.py
 import streamlit as st
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from controllers.db_controller import get_session_local
 from datetime import datetime
 from config import DATABASE_URL
 from models.coach_model import Coach
 from models.player_model import Player
 from models.session_model import Session, SessionStatus
-from controllers.session_controller import create_session, update_session, delete_session
-from controllers.calendar_controller import list_sessions_for_coach
+from common.services.session_service import SessionService  # Importamos la nueva clase del servicio
 from controllers.sheets_controller import get_financials
 
 # Conexión a BD
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+SessionLocal = get_session_local()
 
 def show():
     st.title("Administración")
@@ -31,12 +27,16 @@ def show():
         sel_player = st.selectbox("Selecciona Jugador", list(player_opts.keys()))
         start = st.datetime_input("Inicio de sesión", value=datetime.now())
         end = st.datetime_input("Fin de sesión", value=datetime.now())
+        notes = st.text_area("Notas adicionales (opcional)")
+
         if st.button("Crear sesión"):
-            new_sess, event_id = create_session(
-                player_id=player_opts[sel_player],
-                coach_id=coach_opts[sel_coach],
-                start_time=start,
-                end_time=end
+            new_sess, event_id = SessionService.create(
+                db, 
+                player_id=player_opts[sel_player], 
+                coach_id=coach_opts[sel_coach], 
+                start_time=start, 
+                end_time=end, 
+                notes=notes
             )
             st.success(f"Sesión creada (ID DB: {new_sess.id}, ID Calendar: {event_id})")
 
@@ -58,18 +58,19 @@ def show():
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         if st.button(f"Completar {s.id}"):
-                            update_session(s.id, status=SessionStatus.COMPLETED)
+                            SessionService.update(db, s.id, status=SessionStatus.COMPLETED)
                             st.experimental_rerun()
                     with col2:
                         if st.button(f"Cancelar {s.id}"):
-                            update_session(s.id, status=SessionStatus.CANCELED)
+                            SessionService.update(db, s.id, status=SessionStatus.CANCELED)
                             st.experimental_rerun()
                     with col3:
                         if st.button(f"Eliminar {s.id}"):
-                            delete_session(s.id)
+                            SessionService.delete(db, s.id)
                             st.experimental_rerun()
             else:
                 st.error("Perfil de coach no encontrado.")
+        
         # 3) Sección para admins: gestión total de sesiones e informe financiero
         elif user_type == 'admin':
             st.subheader("Gestión de Sesiones (Local DB)")
@@ -81,19 +82,20 @@ def show():
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     if st.button(f"Completar {s.id}"):
-                        update_session(s.id, status=SessionStatus.COMPLETED)
+                        SessionService.update(db, s.id, status=SessionStatus.COMPLETED)
                         st.experimental_rerun()
                 with col2:
                     if st.button(f"Cancelar {s.id}"):
-                        update_session(s.id, status=SessionStatus.CANCELED)
+                        SessionService.update(db, s.id, status=SessionStatus.CANCELED)
                         st.experimental_rerun()
                 with col3:
                     if st.button(f"Eliminar {s.id}"):
-                        delete_session(s.id)
+                        SessionService.delete(db, s.id)
                         st.experimental_rerun()
 
             st.subheader("Informe Financiero")
             df = get_financials()
             st.dataframe(df)
+
         else:
             st.error("No tienes permiso para acceder a esta sección.")

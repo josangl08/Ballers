@@ -14,4 +14,4 @@ class Player(Base):
     # Relaciones
     user       = relationship("User", back_populates="player_profile")
     sessions   = relationship("Session", back_populates="player")
-    tests      = relationship("TestResult", back_populates="player")
+    test_results = relationship("TestResult", back_populates="player")

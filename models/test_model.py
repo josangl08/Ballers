@@ -23,4 +23,4 @@ class TestResult(Base):
     jumping             = Column(Float)
 
     # Relaciones
-    player              = relationship("Player", back_populates="tests")
+    player              = relationship("Player", back_populates="test_results")

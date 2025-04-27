@@ -2,6 +2,8 @@
 from common.calendar_manager import create_calendar_event, update_calendar_event, delete_calendar_event
 from models.session_model import Session, SessionStatus
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy.exc import SQLAlchemyError
+from controllers.db_controller import SessionLocal
 from datetime import datetime
 
 def create_session(db: DBSession, coach_id: int, player_id: int, start_time: datetime, end_time: datetime, notes: str = ""):
@@ -84,6 +86,7 @@ def get_sessions_by_player_id(player_id):
             sessions = session.query(Session).filter(Session.player_id == player_id).all()
             return sessions
     except SQLAlchemyError as e:
+        print(f"Error al obtener sesiones para el jugador: {e}")
         return None
 
 def get_sessions_by_coach_id(coach_id):
@@ -95,4 +98,5 @@ def get_sessions_by_coach_id(coach_id):
             sessions = session.query(Session).filter(Session.coach_id == coach_id).all()
             return sessions
     except SQLAlchemyError as e:
+        print(f"Error al obtener sesiones para el entrenador: {e}")
         return None

@@ -1,14 +1,14 @@
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from sqlalchemy.orm import declarative_base, relationship
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
+from .base import Base
 
-Base = declarative_base()
 
 class UserType(enum.Enum):
-    ADMIN = "admin"
-    COACH = "coach"
-    PLAYER = "player"
+    admin  = "admin"
+    coach  = "coach"
+    player = "player"
 
 class User(Base):
     __tablename__ = "users"
@@ -20,9 +20,9 @@ class User(Base):
     email          = Column(String, unique=True, nullable=False)
     phone          = Column(String)
     line           = Column(String)                    # LINE de mensajería
-    fecha_registro = Column(DateTime, default=datetime.utcnow)
+    fecha_registro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     date_of_birth  = Column(DateTime)
-    user_type      = Column(Enum(UserType), nullable=False)
+    user_type      = Column(Enum(UserType, native_enum=False), nullable=False)
     permit_level   = Column(Integer, default=1)
 
     # Relaciones a perfiles específicos

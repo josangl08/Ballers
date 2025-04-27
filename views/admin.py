@@ -4,6 +4,7 @@ from datetime import datetime
 from config import DATABASE_URL
 from models.coach_model import Coach
 from models.player_model import Player
+from models.user_model import User
 from models.session_model import Session, SessionStatus
 from common.services.session_service import SessionService  # Importamos la nueva clase del servicio
 from controllers.sheets_controller import get_financials
@@ -96,6 +97,32 @@ def show():
             st.subheader("Informe Financiero")
             df = get_financials()
             st.dataframe(df)
+            # Gestión de Usuarios
+            st.subheader("Gestión de Usuarios")
+
+            SessionLocal = get_session_local()
+
+            with SessionLocal() as db:
+                users = db.query(User).all()
+
+            if users:
+                user_data = []
+                for user in users:
+                    user_data.append({
+                        "ID": user.user_id,
+                        "Username": user.username,
+                        "Nombre": user.name,
+                        "Email": user.email,
+                        "Teléfono": user.phone,
+                        "Fecha Nacimiento": user.date_of_birth,
+                        "Tipo Usuario": user.user_type,
+                        "Nivel Permiso": user.permit_level
+                    })
+                import pandas as pd
+                df_users = pd.DataFrame(user_data)
+                st.dataframe(df_users, use_container_width=True)
+            else:
+                st.write("No hay usuarios registrados.")
 
         else:
             st.error("No tienes permiso para acceder a esta sección.")

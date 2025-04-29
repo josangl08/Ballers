@@ -1,4 +1,4 @@
-# views/login.py
+# common/login.py
 import streamlit as st
 from controllers.db_controller import get_session_local
 from config import DATABASE_URL
@@ -8,12 +8,26 @@ import bcrypt
 # Conexión a la BD
 SessionLocal = get_session_local()
 
+def _hide_sidebar_and_button():
+    st.markdown(
+        """
+        <style>
+        /* oculta barra + botón sólo en la pantalla de login */
+        [data-testid="stBaseButton-headerNoPadding"]{
+            display:none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 def show():
+    _hide_sidebar_and_button()
     # Diseño centrado
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-        st.image("assets/logo-ballers.png", width=200)
+        #st.image("assets/logo-ballers.png", width=200)
         st.title("Iniciar sesión")
 
         with st.form(key='login_form'):

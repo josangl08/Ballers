@@ -1,0 +1,43 @@
+/* ---------- ajustes globales ---------- */
+
+/*  Fondo global*/
+html, body, .stApp, .viewerContent{
+    background-color: var(--app-bg, #1d1c1c) !important;
+    /* También puedes jugar con:                   *
+     * background: linear-gradient(...); 
+    background-image: url("assets/ballers-360.png"); */
+  }
+/* ── Fondo del header (barra Deploy / menú) ───────────────── */
+header[data-testid="stHeader"]{
+    background-color: var(--app-bg,#1d1c1c) !important;
+    /* borra la sombra inferior para que se funda con el resto   */
+    box-shadow:none !important;
+  }
+/* Centrar cualquier logo que se pinte con st.image */
+div[data-testid="stImage"]{
+    text-align:left;
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:1.7rem;
+  }
+
+  /* Reducir padding general */
+  div.block-container{padding-top:2rem;}
+  
+  /* Oculta la navegación automática de Streamlit */
+  section[data-testid="stSidebarNav"] {display:none !important;}
+  
+  /* ---------- sidebar ---------- */
+  
+  /* El color real se inyecta con la variable --sidebar-bg */
+  [data-testid="stSidebar"]{
+    background-color: var(--sidebar-bg, #ffffff);
+  }
+  
+  /* texto de los botones: usa la variable --menu-txt */
+[data-testid="stSidebar"] button span,
+[data-testid="stSidebar"] button p{
+  color:var(--menu-txt,#1a1a1a) !important;
+  font-weight:600;
+}

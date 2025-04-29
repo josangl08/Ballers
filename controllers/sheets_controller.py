@@ -1,35 +1,23 @@
 # controllers/sheets_controller.py
-import os
-import gspread
+
 import pandas as pd
-import streamlit as st
+import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from config import SERVICE_ACCOUNT, SHEET_KEY
 
-# Configuración de Google Sheets
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
-SHEET_KEY = os.getenv("GSPREAD_SHEET_KEY")  # ID del spreadsheet
-
-@st.cache_resource
-def get_gspread_client():
-    """
-    Crea y devuelve el cliente de gspread autenticado.
-    """
-    scope = [
-        'https://spreadsheets.google.com/feeds',
-        'https://www.googleapis.com/auth/drive'
-    ]
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        SERVICE_ACCOUNT_FILE, scope)
-    client = gspread.authorize(credentials)
-    return client
-
-@st.cache_data
 def get_financials():
-    """
-    Lee el sheet de gastos e ingresos y devuelve un DataFrame de pandas.
-    """
-    client = get_gspread_client()
-    sheet = client.open_by_key(SHEET_KEY).sheet1
-    data = sheet.get_all_records()
+    # Definimos SCOPES para Sheets
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+
+    # Cargamos las credenciales
+    creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT, scope)
+    client = gspread.authorize(creds)
+
+    # Abrimos el archivo por ID
+    sheet = client.open_by_key(SHEET_KEY)
+    worksheet = sheet.sheet1  # Primer pestaña
+
+    # Descargamos los datos
+    data = worksheet.get_all_records()
     df = pd.DataFrame(data)
     return df

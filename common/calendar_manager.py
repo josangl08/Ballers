@@ -1,17 +1,20 @@
-
+# common/calendar_manager.py
 
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-import os
+from config import SERVICE_ACCOUNT, GOOGLE_CALENDAR_ID
 from datetime import datetime
 
 # Configuración para conectarse a Google Calendar
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-SERVICE_ACCOUNT_FILE = 'data/credentials.json'
 
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+# Cargamos las credenciales usando config
 credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    SERVICE_ACCOUNT,
+    scopes=SCOPES
 )
+
 
 service = build('calendar', 'v3', credentials=credentials)
 

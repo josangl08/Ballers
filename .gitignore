@@ -177,4 +177,4 @@ cython_debug/
 .backup.py
 
 # google calendar and sheets
-/data/.credentials.json
+data/.credentials.json

@@ -1,7 +1,6 @@
 import streamlit as st
 from controllers.db_controller import get_session_local
 from datetime import datetime
-from config import DATABASE_URL
 from models.player_model import Player
 from models.test_model import TestResult
 from common.services.session_service import SessionService  # Importamos la nueva clase del servicio

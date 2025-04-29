@@ -1,7 +1,8 @@
 # main.py
 import streamlit as st
 import time
-from config import SECRET_KEY
+from common import login            
+from common.menu import generar_menu 
 
 # Función de logout
 def logout():
@@ -49,7 +50,7 @@ st.markdown("""
 if "user_id" not in st.session_state:
     
      # Contenido principal con el formulario de login
-    import views.login as login_page
+    import common.login as login_page
     login_page.show()  # Muestra la página de login
     st.stop()  # Detiene la ejecución aquí si el usuario no está logeado
 
@@ -115,10 +116,10 @@ with st.sidebar:
 if 'selected_page' in st.session_state:
     loading_animation(f"Cargando {st.session_state['selected_page']}...", seconds=1)
     if st.session_state['selected_page'] == 'Ballers':
-        import views.ballers as ballers_page
+        import pages.ballers as ballers_page
         ballers_page.show()
     elif st.session_state['selected_page'] == 'Administración':
-        import views.admin as admin_page
+        import pages.admin as admin_page
         admin_page.show()
     #elif st.session_state['selected_page'] == 'Mi Perfil':
         #import views.ballers as ballers_page

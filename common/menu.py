@@ -8,9 +8,9 @@ def generar_menu():
     if role == "admin":
         options = {"Ballers": "ballers", "Administración": "admin"}
     elif role == "coach":
-        options = {"Ballers": "ballers"}
+        options = {"Ballers": "ballers", "Administración": "admin"}
     else:                    # player
-        options = {"Mi Perfil": "ballers"}
+        options = {"Ballers": "ballers"}
 
     choice = st.sidebar.radio("Menú", list(options.keys()))
     return options[choice]

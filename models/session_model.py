@@ -20,7 +20,6 @@ class Session(Base):
     status      = Column(Enum(SessionStatus), default=SessionStatus.SCHEDULED)
     notes      = Column(String, nullable=True)
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
     calendar_event_id = Column(String, nullable=True)
 
     # Relaciones

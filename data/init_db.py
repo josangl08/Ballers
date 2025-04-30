@@ -1,7 +1,11 @@
-# init_db.py
+# data/init_db.py
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.user_model import Base, User, UserType
+from models.user_model import User, UserType
+from models.base import Base
 from models.admin_model import Admin
 from models.coach_model import Coach
 from models.player_model import Player
@@ -9,6 +13,7 @@ from models.session_model import Session, SessionStatus
 from models.test_model import TestResult
 from config import DATABASE_URL
 import bcrypt
+
 
 
 def init_db():
@@ -25,7 +30,7 @@ def init_db():
         admin_user = session.query(User).filter_by(username="admin").first()
         if not admin_user:
             # Generar hash de contraseña (por defecto: 'admin123')
-            pw = 'admin123'.encode('utf-8')
+            pw = 'admin'.encode('utf-8')
             pw_hash = bcrypt.hashpw(pw, bcrypt.gensalt()).decode('utf-8')
 
             admin_user = User(
@@ -35,7 +40,7 @@ def init_db():
                 email          = "admin@centro.com",
                 phone          = "",
                 line           = "",
-                user_type      = UserType.ADMIN,
+                user_type      = UserType.admin,
                 permit_level   = 10
             )
             session.add(admin_user)

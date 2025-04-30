@@ -8,6 +8,8 @@ from models.coach_model import Coach
 from models.player_model import Player
 from models.user_model import User
 from models.session_model import Session, SessionStatus
+# Importar las nuevas funciones de sincronización
+from controllers.calendar_controller import sync_db_to_calendar, sync_calendar_to_db
 
 # Conexión a BD
 SessionLocal = get_session_local()
@@ -58,9 +60,92 @@ def show():
 
         if selected_tab == "Ver sesiones/CRUD sesiones" and user_type == 'admin':
             st.subheader("Gestión de Sesiones (Admin)")
+            
+            # Nueva sección: Botones para sincronización con Google Calendar
+            st.write("### Sincronización con Google Calendar")
+            
+            # Contador de sesiones pendientes
+            pending_count = db.query(Session).filter(Session.calendar_event_id.is_(None)).count()
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(f"🔄 Sincronizar DB → Calendar ({pending_count} pendientes)"):
+                    # Verificar número de sesiones pendientes para advertir si son muchas
+                    if pending_count > 10:
+                        st.warning(f"Hay {pending_count} sesiones pendientes de sincronizar. Esto podría exceder los límites de la API. Se procesarán en lotes pequeños.")
+                    
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    try:
+                        # Procesar en lotes de 1 para evitar límites de tasa
+                        batch_size = 1
+                        status_text.text("Sincronizando sesiones a Google Calendar (esto puede tardar varios minutos)...")
+                        
+                        # Llamar a la función de sincronización con el tamaño de lote
+                        nuevos = sync_db_to_calendar(db, batch_size=batch_size)
+                        
+                        # Actualizar barra de progreso y mensaje
+                        progress_bar.progress(100)
+                        status_text.success(f"¡Sincronización completada! {nuevos} eventos creados.")
+                        
+                        # Recargar la página para actualizar los contadores
+                        st.experimental_rerun()
+                        
+                    except Exception as e:
+                        progress_bar.empty()
+                        status_text.error(f"Error durante la sincronización: {str(e)}")
+                        st.error("Detalles técnicos del error:")
+                        st.exception(e)
+            
+            with col2:
+                if st.button("🔄 Sincronizar Calendar → DB"):
+                    with st.spinner("Sincronizando desde Google Calendar..."):
+                        st.info("Esta función será implementada en la siguiente fase.")
+            
+            # Estadísticas de sincronización
+            total_sessions = db.query(Session).count()
+            synced_sessions = db.query(Session).filter(Session.calendar_event_id.isnot(None)).count()
+            
+            st.write("### Estadísticas de Sincronización")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total de sesiones", f"{total_sessions}")
+            with col2:
+                st.metric("Sesiones sincronizadas", f"{synced_sessions}")
+            with col3:
+                sync_percent = (synced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+                st.metric("Porcentaje sincronizado", f"{sync_percent:.1f}%")
+            
+            # Mostrar todas las sesiones
+            st.write("### Lista de Sesiones")
             all_sessions = db.query(Session).all()
-            for s in all_sessions:
-                st.write(f"ID {s.id}: Coach {s.coach_id} - Jugador {s.player_id} | {s.start_time} - {s.end_time} [{s.status.value}]")
+            
+            # Filtros
+            col1, col2 = st.columns(2)
+            with col1:
+                filter_sync = st.selectbox("Filtrar por estado de sincronización:", 
+                                          ["Todas", "Sincronizadas", "No sincronizadas"])
+            with col2:
+                filter_status = st.selectbox("Filtrar por estado de sesión:", 
+                                            ["Todas"] + [status.value for status in SessionStatus])
+            
+            # Aplicar filtros
+            filtered_sessions = all_sessions
+            if filter_sync == "Sincronizadas":
+                filtered_sessions = [s for s in filtered_sessions if s.calendar_event_id]
+            elif filter_sync == "No sincronizadas":
+                filtered_sessions = [s for s in filtered_sessions if not s.calendar_event_id]
+                
+            if filter_status != "Todas":
+                filtered_sessions = [s for s in filtered_sessions if s.status.value == filter_status]
+            
+            # Mostrar sesiones filtradas
+            for s in filtered_sessions:
+                # Añadir indicador de sincronización
+                sync_status = "✅" if s.calendar_event_id else "❌"
+                
+                st.write(f"{sync_status} ID {s.id}: Coach {s.coach_id} - Jugador {s.player_id} | {s.start_time} - {s.end_time} [{s.status.value}]")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     if st.button(f"Completar {s.id}"):
@@ -81,7 +166,10 @@ def show():
             if coach:
                 sess_list = db.query(Session).filter_by(coach_id=coach.coach_id).all()
                 for s in sess_list:
-                    st.write(f"ID {s.id}: {s.start_time} - {s.end_time} [{s.status.value}]")
+                    # Añadir indicador de sincronización
+                    sync_status = "✅" if s.calendar_event_id else "❌"
+                    
+                    st.write(f"{sync_status} ID {s.id}: {s.start_time} - {s.end_time} [{s.status.value}]")
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         if st.button(f"Completar {s.id}"):

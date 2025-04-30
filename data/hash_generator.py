@@ -1,7 +1,7 @@
 # hash_generator.py
 import bcrypt
 
-passwords = ["admin", "playerpass", "coachpass"]
+passwords = ["admin", "adminpass", "playerpass", "coachpass"]
 
 for pwd in passwords:
     hashed = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())

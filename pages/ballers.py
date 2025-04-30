@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 # Conexión a BD
 SessionLocal = get_session_local()
 
+
 def show():
-    st.title("Ballers - Perfiles de Jugadores")
+    st.title("Ballers Profiles")
 
     # Filtrar lista de jugadores según rol
     with SessionLocal() as db:
@@ -20,7 +21,7 @@ def show():
             players = db.query(Player).all()
         names = [p.user.name for p in players]
 
-    selected = st.selectbox("Selecciona un jugador", names)
+    selected = st.selectbox("Select Player", names)
     if not selected:
         return
 
@@ -29,9 +30,9 @@ def show():
             p = db.query(Player).filter_by(user_id=st.session_state['user_id']).first()
         else:
             p = (db.query(Player)
-                 .join(Player.user)
-                 .filter(Player.user.has(name=selected))
-                 .first())
+                .join(Player.user)
+                .filter(Player.user.has(name=selected))
+                .first())
     if not p:
         st.error("Jugador no encontrado")
         return

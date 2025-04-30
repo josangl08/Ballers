@@ -8,6 +8,7 @@ import bcrypt
 # Conexión a la BD
 SessionLocal = get_session_local()
 
+
 def _hide_sidebar_and_button():
     st.markdown(
         """

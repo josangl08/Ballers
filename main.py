@@ -27,7 +27,7 @@ st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
 # ---------- header con logo centrado ----------
 _, c, _ = st.columns([1, 2, 1])
 with c:
-    st.image("assets/logo_white.png", width=150)
+    st.image("assets/logo_white.png", width=300)
 
 # ---------- flujo principal ----------
 if "user_id" not in st.session_state:
@@ -42,11 +42,18 @@ if "user_id" not in st.session_state:
 
 # ---------- usuario logeado → menú dinámico ----------
 selected = generar_menu(logout_cb=logout)
-
+if "selected_page" not in st.session_state:
+    if st.session_state["user_type"] in ("admin", "coach"):
+        st.session_state["selected_page"] = "Administración"
+    else:  # player
+        st.session_state["selected_page"] = "Ballers"
+        
 # ---------- router ----------
+selected = st.session_state.get("selected_page")
 if selected:
     loading(f"Cargando {selected}...", 1)
 
+    
     if selected == "Ballers":
         import pages.ballers as page
     elif selected == "Administración":

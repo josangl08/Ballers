@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from .user_model import Base
 
 class TestResult(Base):
@@ -9,7 +9,9 @@ class TestResult(Base):
     id                  = Column(Integer, primary_key=True)
     player_id           = Column(Integer, ForeignKey("players.player_id"), nullable=False)
     test_name           = Column(String, nullable=False)
-    date                = Column(DateTime, default=datetime.utcnow)
+    date                = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    weight              = Column(Float)   # Peso en kg
+    height              = Column(Float)   # Altura en cm
 
     # Métricas de rendimiento
     ball_control        = Column(Float)

@@ -3,7 +3,7 @@
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from config import SERVICE_ACCOUNT, SHEET_KEY
+from config import SERVICE_ACCOUNT, GOOGLE_SHEET_ID
 
 def get_financials():
     # Definimos SCOPES para Sheets
@@ -14,7 +14,7 @@ def get_financials():
     client = gspread.authorize(creds)
 
     # Abrimos el archivo por ID
-    sheet = client.open_by_key(SHEET_KEY)
+    sheet = client.open_by_key(GOOGLE_SHEET_ID)
     worksheet = sheet.sheet1  # Primer pestaña
 
     # Descargamos los datos

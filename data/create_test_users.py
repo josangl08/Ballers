@@ -1,21 +1,28 @@
 # create_test_users.py
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 from controllers.db_controller import get_session_local
 from models.user_model import User
 from models.admin_model import Admin
 from models.coach_model import Coach
 from models.player_model import Player
 from datetime import datetime
+import bcrypt
 
 # Conexión a la base de datos
 SessionLocal = get_session_local()
 
+
 def create_test_users():
     with SessionLocal() as db:
         # ---- Crear Admin ----
+        # Generar hash de contraseña (por defecto: 'admin123')
+        pw = 'adminpass'.encode('utf-8')
+        pw_hash = bcrypt.hashpw(pw, bcrypt.gensalt()).decode('utf-8')
         admin_user = User(
             username="admin1",
             name="Admin Uno",
-            password_hash="adminpass",  # OJO en real se debe encriptar
+            password_hash=pw_hash,  # OJO en real se debe encriptar
             email="admin1@example.com",
             phone="600000001",
             line="admin_line",
@@ -33,6 +40,8 @@ def create_test_users():
         db.add(admin_profile)
 
         # ---- Crear Coach ----
+        pw = 'coachpass'.encode('utf-8')
+        pw_hash = bcrypt.hashpw(pw, bcrypt.gensalt()).decode('utf-8')
         coach_user = User(
             username="coach1",
             name="Coach Uno",
@@ -54,10 +63,12 @@ def create_test_users():
         db.add(coach_profile)
 
         # ---- Crear Player ----
+        pw = 'coachpass'.encode('utf-8')
+        pw_hash = bcrypt.hashpw(pw, bcrypt.gensalt()).decode('utf-8')
         player_user = User(
             username="player1",
             name="Player Uno",
-            password_hash="playerpass",
+            password_hash=pw_hash,
             email="player1@example.com",
             phone="600000003",
             line="player_line",

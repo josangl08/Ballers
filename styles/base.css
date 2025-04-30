@@ -7,20 +7,35 @@ html, body, .stApp, .viewerContent{
      * background: linear-gradient(...); 
     background-image: url("assets/ballers-360.png"); */
   }
+/*  Color de texto */
+  html, body, .stApp{
+    color:#ffffff !important;        /* texto normal */
+  }
+  
+  /* Métricas de Streamlit (st.metric) – valor y etiqueta */
+  div[data-testid="stMetricValue"],
+  div[data-testid="stMetricLabel"]{
+    color:#ffffff !important;
+  } 
+
 /* ── Fondo del header (barra Deploy / menú) ───────────────── */
 header[data-testid="stHeader"]{
     background-color: var(--app-bg,#1d1c1c) !important;
     /* borra la sombra inferior para que se funda con el resto   */
     box-shadow:none !important;
   }
-/* Centrar cualquier logo que se pinte con st.image */
-div[data-testid="stImage"]{
-    text-align:left;
+/* aplica al contenedor principal “block-container” */
+div.block-container{
+    background: url("assets/360_mix.png") center/cover no-repeat fixed !important;
+}
+
+/* Centrar cualquier logo añadido con st.image */
+div[data-testid="stImage"] > div[data-testid="stImageContainer"]{
     display:block;
-    margin-left:auto;
-    margin-right:auto;
-    margin-top:1.7rem;
-  }
+    margin: 1.7rem auto 0;      /* top 1.7 rem, horizontal auto, bottom 0 */
+    text-align:center;          /* por si la imagen es inline-block */
+}
+
 
   /* Reducir padding general */
   div.block-container{padding-top:2rem;}

@@ -9,7 +9,7 @@ def get_db_engine():
     """
     Devuelve una única instancia de SQLAlchemy Engine.
     """
-    return create_engine(DATABASE_URL)
+    return create_engine(DATABASE_URL, echo=True)
 
 @st.cache_resource
 def get_session_local():
